@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:openDrawer="right"
+    android:id="@+id/drawer_layout"
+    tools:context=".MainActivity">
+    <!---  START CHANGES   -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_marginStart="10dp">
+
+        <Button
+            android:id="@+id/btn_changeTheme_dark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dark"
+            android:textSize="15sp"
+            android:backgroundTint="@color/purple_700"/>
+        <Button
+            android:id="@+id/btn_changeTheme_light"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Light"
+            android:textSize="15sp"
+            android:backgroundTint="@color/purple_700"/>
+
+    </LinearLayout>
+    <!---  END CHANGES   -->
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="bottom">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btn_drawer_open"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:backgroundTint="@color/teal_700"
+            android:layout_margin="10dp"
+            android:src="@android:drawable/ic_dialog_info"
+            android:textSize="15sp"
+            android:contentDescription="TODO" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btn_record"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:backgroundTint="@color/teal_700"
+            android:layout_margin="10dp"
+            android:src="@android:drawable/ic_media_play"
+            android:textSize="15sp"
+            android:contentDescription="TODO" />
+
+        <TextView
+            android:id="@+id/recording_duration_left"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginTop="10dp"
+            android:padding="5dp" />
+        <TextView
+            android:id="@+id/current_energy"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginBottom="10dp"
+            android:padding="5dp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="300dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_gravity="start">
+        <include layout="@layout/layout_drawer_bat_info" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="300dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_gravity="end">
+        <include layout="@layout/layout_drawer_test_info" />
+    </LinearLayout>
+
+
+</androidx.drawerlayout.widget.DrawerLayout>

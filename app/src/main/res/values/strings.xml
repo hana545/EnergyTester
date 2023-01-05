@@ -1,0 +1,43 @@
+<resources>
+    <string name="app_name">EnergyTester</string>
+
+
+    <string name="battery_health_cold">Health:  Cold</string>
+    <string name="battery_health_dead">"Health:  Dead</string>
+    <string name="battery_health_good">Health:  Good</string>
+    <string name="battery_health_over_voltage">Health: Over Voltage</string>
+    <string name="battery_health_overheat">Health:  Overheat</string>
+    <string name="battery_health_unspecified_failure">Health:  Unspecified failure</string>
+    <string name="battery_health_unokwn">Health: Unknown</string>
+
+    <string name="battery_plugged_none">None</string>
+    <string name="battery_plugged_wireless">Wireless</string>
+    <string name="battery_plugged_usb">USB</string>
+    <string name="battery_plugged_ac">AC</string>
+
+    <string name="battery_status_discharging">Discharging</string>
+    <string name="battery_status_charging">Charging</string>
+    <string name="battery_status_full">Full</string>
+
+    <plurals name="time_left">
+        <item quantity="one">Left %1$s second.</item>
+        <item quantity="other">Left %1$s seconds.</item>
+    </plurals>
+    <string name="battery_pct_text">Battery Pct:  %1$d%%</string>
+    <string name="battery_charging_status">Battery Charging Status:  %1$s </string>
+    <string name="plugged_text">Plugged:  %1$s </string>
+    <string name="temperature_text">Temperature: %1$s °C</string>
+    <string name="voltage_text">Voltage %1$s V</string>
+    <string name="current_text">Current %1$s mAh</string>
+    <string name="power_text">Power: %1$s W</string>
+    <string name="energy_text">Energy: %1$s J</string>
+
+    <string name="duration_unit">%1$s s</string>
+    <string name="voltage_unit">%1$s V</string>
+    <string name="current_unit">%1$s mAh</string>
+    <string name="power_unit">%1$s W</string>
+    <string name="energy_unit">%1$s J</string>
+
+    <string name="timer_stopped">Stopped</string>
+
+</resources>
