@@ -5,72 +5,87 @@
     android:layout_marginHorizontal="10dp"
     android:theme="@style/Theme.Material3.Dark"
     android:orientation="vertical">
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Battery Info:"
-        android:textSize="18sp"
-        android:padding="10dp"/>
-        <LinearLayout
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            android:orientation="vertical">
+            android:text="Battery Info:"
+            android:textSize="18sp"
+            android:padding="10dp"/>
+        <ImageButton
+            android:id="@+id/btn_refresh_battery_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_popup_sync"
+            android:layout_marginVertical="5dp"
+            android:layout_marginHorizontal="20dp"
+            />
+    </LinearLayout>
 
-            <TextView
-                android:id="@+id/capacityTv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:textSize="15sp"/>
-            <TextView
-                android:id="@+id/healthTv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:textSize="15sp"/>
-            <TextView
-                android:id="@+id/batteryPctTv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:textSize="15sp"/>
-            <TextView
-                android:id="@+id/pluggedTv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:textSize="15sp"/>
-            <TextView
-                android:id="@+id/chargingStatusTv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:textSize="15sp"/>
-            <TextView
-                android:id="@+id/tempTv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:textSize="15sp"/>
+    <LinearLayout
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/voltageTv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:textSize="15sp"/>
-            <TextView
-                android:id="@+id/currentTv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:textSize="15sp"/>
-            <TextView
-                android:id="@+id/powerTv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:textSize="15sp"/>
+        <TextView
+            android:id="@+id/capacityTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="15sp"/>
+        <TextView
+            android:id="@+id/healthTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="15sp"/>
+        <TextView
+            android:id="@+id/batteryPctTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="15sp"/>
+        <TextView
+            android:id="@+id/pluggedTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="15sp"/>
+        <TextView
+            android:id="@+id/chargingStatusTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="15sp"/>
+        <TextView
+            android:id="@+id/tempTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="15sp"/>
+
+        <TextView
+            android:id="@+id/voltageTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="15sp"/>
+        <TextView
+            android:id="@+id/currentTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="15sp"/>
+        <TextView
+            android:id="@+id/powerTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="15sp"/>
     </LinearLayout>
     <com.google.android.material.divider.MaterialDivider
         android:layout_width="match_parent"
@@ -87,17 +102,31 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:weightSum="2"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Name:"
+            android:padding="10dp"/>
+        <EditText
+            android:id="@+id/test_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="test"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:orientation="horizontal">
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.8"
             android:orientation="vertical">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Minutes:"
+                android:text="Duration (minutes):"
                 android:padding="10dp"/>
             <NumberPicker
                 android:id="@+id/recording_duration"
@@ -112,19 +141,26 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1.2"
+            android:layout_weight="0.8"
             android:orientation="vertical">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Name:"
+                android:text="Intervals of (s): "
                 android:padding="10dp"/>
-            <EditText
-                android:id="@+id/test_name"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="test"/>
+
+            <NumberPicker
+                android:id="@+id/interval_duration"
+                android:layout_width="50dp"
+                android:layout_height="90dp"
+                android:orientation="horizontal"
+                android:layout_gravity="center"
+                android:scrollbarThumbHorizontal="@color/black"
+                android:backgroundTint="@color/white"
+                />
+
         </LinearLayout>
+
     </LinearLayout>
 
     <com.google.android.material.divider.MaterialDivider

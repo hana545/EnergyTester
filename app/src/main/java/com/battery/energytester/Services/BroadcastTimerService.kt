@@ -10,6 +10,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.battery.energytester.MainActivity
+import java.util.*
 
 
 class BroadcastTimerService() : Service() {
@@ -20,14 +21,15 @@ class BroadcastTimerService() : Service() {
     val COUNTDOWN_BR = "com.battery.energytester.countdown_br"
     var bi = Intent(COUNTDOWN_BR)
     var testDuration : Long = 0
-    var counting = false
+    var testInterval : Int = 30
+    var canceled = false
 
     lateinit var cdt: CountDownTimer
 
     companion object {
-        fun startService(context: Context, message: String, duration: Long) {
+        fun startService(context: Context, interval: Int, duration: Long) {
             val startIntent = Intent(context, BroadcastTimerService::class.java)
-            startIntent.putExtra("inputExtra", message)
+            startIntent.putExtra("TestInterval", interval)
             startIntent.putExtra("TestDuration", duration)
             ContextCompat.startForegroundService(context, startIntent)
         }
@@ -38,23 +40,27 @@ class BroadcastTimerService() : Service() {
     }
 
     override fun onDestroy() {
-        cdt.onFinish()
+        canceled = true
+        //cdt.cancel()
         Log.i(TAG, "Timer cancelled")
         super.onDestroy()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-
+        canceled = false
         testDuration = intent!!.getLongExtra("TestDuration", 0) * 60
+        testInterval = intent.getIntExtra("TestInterval", 30)
+
         cdt = object : CountDownTimer(testDuration*1000, 1000) {
             var iteration = 0
             var duration_tmp = testDuration
             var secsUntilFinished: Long = 0
+
             override fun onTick(millisUntilFinished: Long) {
-                counting = true
                 secsUntilFinished = millisUntilFinished / 1000
-                bi.putExtra("countdown_seconds", secsUntilFinished);
-                if ((secsUntilFinished).mod(30) == 0 && secsUntilFinished > 0) {
+                bi.putExtra("countdown_seconds", secsUntilFinished)
+
+                if (((secsUntilFinished).mod(testInterval) == 0 || canceled)) {
                     iteration++
                     val time_period = (duration_tmp - secsUntilFinished).toFloat()
                     duration_tmp -= time_period.toLong()
@@ -62,29 +68,25 @@ class BroadcastTimerService() : Service() {
                     bi.putExtra("countdown_iteration", iteration)
                     bi.putExtra("countdown_time_period", time_period)
                     bi.putExtra("countdown_total_duration", testDuration - duration_tmp)
-                    bi.putExtra("countdown_finish", false)
-                } else {
-                    bi.putExtra("countdown_new_period", false)
                 }
+                //Log.i(TAG, "Sending from onTick")
                 sendBroadcast(bi)
+                bi.putExtra("countdown_new_period", false)
+                bi.putExtra("countdown_finish", false)
+                if(canceled) onFinish()
             }
 
             override fun onFinish() {
                 cancel()
-                counting = false
-                val time_period = (duration_tmp - secsUntilFinished).toFloat()
-                duration_tmp -= time_period.toLong()
-                iteration++
-                bi.putExtra("countdown_new_period", true)
-                bi.putExtra("countdown_iteration", iteration)
-                bi.putExtra("countdown_time_period", time_period)
-                bi.putExtra("countdown_total_duration", testDuration - duration_tmp)
                 bi.putExtra("countdown_finish", true)
+                Log.i(TAG, "Sending from onFinish")
                 sendBroadcast(bi)
             }
 
+
         }
         cdt.start()
+
         val input = intent?.getStringExtra("inputExtra")
         createNotificationChannel()
         val notificationIntent = Intent(this, MainActivity::class.java)
@@ -113,4 +115,5 @@ class BroadcastTimerService() : Service() {
             manager!!.createNotificationChannel(serviceChannel)
         }
     }
+
 }

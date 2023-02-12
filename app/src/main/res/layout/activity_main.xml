@@ -7,30 +7,9 @@
     tools:openDrawer="right"
     android:id="@+id/drawer_layout"
     tools:context=".MainActivity">
+
     <!---  START CHANGES   -->
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:layout_marginStart="10dp">
-
-        <Button
-            android:id="@+id/btn_changeTheme_dark"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Dark"
-            android:textSize="15sp"
-            android:backgroundTint="@color/purple_700"/>
-        <Button
-            android:id="@+id/btn_changeTheme_light"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Light"
-            android:textSize="15sp"
-            android:backgroundTint="@color/purple_700"/>
-
-    </LinearLayout>
+    
     <!---  END CHANGES   -->
 
     <LinearLayout

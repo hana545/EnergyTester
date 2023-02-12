@@ -13,9 +13,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.NetworkInfo
 import android.net.wifi.WifiManager
-import android.os.BatteryManager
-import android.os.Build
-import android.os.Bundle
+import android.os.*
 import android.provider.Settings
 import android.util.Log
 import android.view.View
@@ -23,7 +21,6 @@ import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -34,28 +31,30 @@ import com.battery.energytester.Database.Iteration
 import com.battery.energytester.Database.Test
 import com.battery.energytester.Services.BroadcastTimerService
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import java.util.*
+import kotlin.concurrent.fixedRateTimer
 
 
 class MainActivity : AppCompatActivity(), TestAdapter.ClickListener {
     private var totalEnergy : Float = 0.0F
     private var avgPowerW : Float = 0.0F
     private var powerW : Float = 0.0F
-    private var avgCurrentMah : Float = 0.0F
-    private var currentMah : Float = 0.0F
+    private var avgCurrentMA : Float = 0.0F
+    private var currentMA : Float = 0.0F
     private var avgVoltageV : Float = 0.0F
     private var voltageV : Float = 0.0F
     private var startBatLevel : Int = 0
     private var endBatLevel : Int = 0
 
-    private var recording = false
-    private lateinit var btnRecord : FloatingActionButton
-
-
     private var testDuration : Long = 30
+    private var testInterval : Int = 5
     private var testName : String = "test"
 
     private var currentTest = Test(0, testName, ArrayList(), 0, 0.0F,0.0F,0.0F,0.0F, 0.0F, 0, 0)
     private var testList = ArrayList<Test>()
+
+    private var recording = false
+    private lateinit var btnRecord : FloatingActionButton
 
     private val db = DBHelper(this, null)
 
@@ -76,12 +75,6 @@ class MainActivity : AppCompatActivity(), TestAdapter.ClickListener {
 
         /////////////////////////////////////////////////////////////////////////////
         //////////          CHANGES         //////
-        findViewById<Button>(R.id.btn_changeTheme_dark).setOnClickListener {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-        }
-        findViewById<Button>(R.id.btn_changeTheme_light).setOnClickListener {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-        }
 
 
         /////////////////////////////////////////////////////////////////////////////
@@ -143,26 +136,14 @@ class MainActivity : AppCompatActivity(), TestAdapter.ClickListener {
 
     @RequiresApi(Build.VERSION_CODES.M)
     private fun loadTestSettings() {
-        val numberPicker = findViewById<NumberPicker>(R.id.recording_duration)
-        numberPicker.maxValue = 60
-        numberPicker.minValue = 1
-        numberPicker.value = testDuration.toInt()
-        numberPicker.wrapSelectorWheel = true
-        numberPicker.setOnValueChangedListener {_, _, newVal ->
-            testDuration = newVal.toLong()
-        }
-
         btnRecord = findViewById(R.id.btn_record)
         btnRecord.setOnClickListener {
             if (recording){
                 Log.d(TAG, "STOPPED recording")
                 recording = false
-
                 BroadcastTimerService.stopService(this)
                 btnRecord.setImageResource(android.R.drawable.ic_media_play)
-
             } else {
-
                 resetEnvParameters()
                 resetVariables()
                 if (isOnline(this) || bluetoothOn()) {
@@ -171,16 +152,11 @@ class MainActivity : AppCompatActivity(), TestAdapter.ClickListener {
                 Log.d(TAG, "STARTED recording")
                 recording = true
                 loadBatterySection()
-
-                testDuration = numberPicker.value.toLong()
-
-                BroadcastTimerService.startService(this, "?", testDuration)
+                BroadcastTimerService.startService(this, testInterval, testDuration)
                 val filter = IntentFilter()
                 filter.addAction("$packageName.countdown_br")
                 registerReceiver(countDownTimerReceiver, filter)
-
                 btnRecord.setImageResource(android.R.drawable.checkbox_off_background)
-
             }
         }
     }
@@ -279,7 +255,7 @@ class MainActivity : AppCompatActivity(), TestAdapter.ClickListener {
     private fun resetVariables() {
         totalEnergy = 0.0F
         avgPowerW = 0.0F
-        avgCurrentMah = 0.0F
+        avgCurrentMA = 0.0F
         avgVoltageV = 0.0F
         startBatLevel = 0
         endBatLevel = 0
@@ -333,6 +309,12 @@ class MainActivity : AppCompatActivity(), TestAdapter.ClickListener {
         cursor!!.close()
     }
 
+    private val batteryInfoReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            Log.i(TAG, "Updating battery informations")
+            updateBatteryData(intent)
+        }
+    }
 
     private fun loadBatterySection() {
         val intentFilter = IntentFilter()
@@ -341,11 +323,7 @@ class MainActivity : AppCompatActivity(), TestAdapter.ClickListener {
         intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED)
         registerReceiver(batteryInfoReceiver, intentFilter)
     }
-    private val batteryInfoReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            updateBatteryData(intent)
-        }
-    }
+
     private val countDownTimerReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             updateTimer(intent)
@@ -353,60 +331,68 @@ class MainActivity : AppCompatActivity(), TestAdapter.ClickListener {
     }
 
     private fun updateTimer(intent: Intent) {
-        Log.i(TAG, "Main getting update")
+        //Log.i(TAG, "Upadate Timer")
         if (intent.extras != null) {
-            val durationTv = findViewById<TextView>(R.id.recording_duration_left)
-            val energyTv  = findViewById<TextView>(R.id.current_energy)
-            durationTv.text = resources.getQuantityString(R.plurals.time_left, intent.getLongExtra("countdown_seconds", 0).toInt(), intent.getLongExtra("countdown_seconds", 0).toInt())
-
-            val newPeriod = intent.getBooleanExtra("countdown_new_period", false)
-
-            if (newPeriod) {
-                //save iteration data
-                Log.i(TAG, "Update for new time period")
-                val iteration = intent.getIntExtra("countdown_iteration", 0)
-                val duration = intent.getFloatExtra("countdown_time_period", 0F)
-                val totalDuration = intent.getLongExtra("countdown_total_duration", 0)
-                val finish = intent.getBooleanExtra("countdown_finish", false)
-
-                val iterationData = Iteration(iteration, duration, currentMah, voltageV, powerW, energy = powerW * duration)
-                currentTest.iterations.add(iterationData)
-                avgPowerW += powerW
-                avgCurrentMah += currentMah
-                avgVoltageV += voltageV
-
-                //save test data
-                totalEnergy += powerW * duration
-                energyTv.text = String.format(resources.getString(R.string.energy_text), String.format("%.3f", totalEnergy))
-                currentTest.duration = totalDuration.toFloat()
-                currentTest.avg_current = avgCurrentMah / currentTest.iterations.size
-                currentTest.avg_voltage = avgVoltageV / currentTest.iterations.size
-                currentTest.avg_power = avgPowerW / currentTest.iterations.size
-                currentTest.energy = totalEnergy
-                currentTest.startBatLevel = startBatLevel
-                currentTest.endBatLevel = endBatLevel
-                findViewById<TextView>(R.id.iterations_value).text = currentTest.iterations.size.toString()
-                findViewById<TextView>(R.id.duration_value).text = currentTest.duration.toString()
-                findViewById<TextView>(R.id.power_value).text = currentTest.avg_power.toString()
-                findViewById<TextView>(R.id.energy_value).text = currentTest.energy.toString()
-                findViewById<TextView>(R.id.test_name_value).text = currentTest.name
-
-                if (finish){
-                    currentTest.iteration_size = currentTest.iterations.size
-                    recording = false
-                    btnRecord.setImageResource(android.R.drawable.ic_media_play)
-                    durationTv.text = getString(R.string.timer_stopped)
-                    BroadcastTimerService.stopService(this)
-
-                    currentTest.id = db.addTest(currentTest)
-                    testList.add(0, currentTest.copy())
-                }
-                loadBatterySection()
-            }
-
+            handleTestData(intent)
 
         }
+    }
 
+    private fun handleTestData(intent: Intent){
+        val durationTv = findViewById<TextView>(R.id.recording_duration_left)
+        val energyTv = findViewById<TextView>(R.id.current_energy)
+        durationTv.text = resources.getQuantityString(
+            R.plurals.time_left,
+            intent.getLongExtra("countdown_seconds", 0).toInt(),
+            intent.getLongExtra("countdown_seconds", 0).toInt()
+        )
+
+        val newPeriod = intent.getBooleanExtra("countdown_new_period", false)
+        val finish = intent.getBooleanExtra("countdown_finish", false)
+        if (newPeriod) {
+            //save iteration data
+            Log.i(TAG, "NEW PERIOD")
+            val iteration = intent.getIntExtra("countdown_iteration", 0)
+            val duration = intent.getFloatExtra("countdown_time_period", 0F)
+            val totalDuration = intent.getLongExtra("countdown_total_duration", 0)
+            val iterationData = Iteration(
+                iteration,
+                duration,
+                currentMA,
+                voltageV,
+                powerW,
+                energy = powerW * duration
+            )
+            currentTest.iterations.add(iterationData)
+            avgPowerW += powerW
+            avgCurrentMA += currentMA
+            avgVoltageV += voltageV
+
+            //save test data
+            totalEnergy += powerW * duration
+            energyTv.text = String.format(
+                resources.getString(R.string.energy_text),
+                String.format("%.3f", totalEnergy)
+            )
+            currentTest.duration = totalDuration.toFloat()
+            currentTest.avg_current = avgCurrentMA / currentTest.iterations.size
+            currentTest.avg_voltage = avgVoltageV / currentTest.iterations.size
+            currentTest.avg_power = avgPowerW / currentTest.iterations.size
+            currentTest.energy = totalEnergy
+            currentTest.startBatLevel = startBatLevel
+            currentTest.endBatLevel = endBatLevel
+            loadBatterySection()
+        }
+        if (finish){
+            recording = false
+            currentTest.iteration_size = currentTest.iterations.size
+            btnRecord.setImageResource(android.R.drawable.ic_media_play)
+            durationTv.text = getString(R.string.timer_stopped)
+            BroadcastTimerService.stopService(this)
+            Log.i(TAG, "FINISHED - add new test")
+            currentTest.id = db.addTest(currentTest)
+            testList.add(0, currentTest.copy())
+        }
     }
 
     private fun getBatteryCapacity(ctx: Context) {
@@ -421,7 +407,6 @@ class MainActivity : AppCompatActivity(), TestAdapter.ClickListener {
     private fun getCurrent(ctx: Context): Long {
         val mBatteryManager = ctx.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
         return mBatteryManager.getLongProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
-
     }
 
     fun updateBatteryData(intent: Intent) {
@@ -432,6 +417,8 @@ class MainActivity : AppCompatActivity(), TestAdapter.ClickListener {
         val chargingStatusTv = findViewById<TextView>(R.id.chargingStatusTv)
         val tempTv = findViewById<TextView>(R.id.tempTv)
         val voltageTv = findViewById<TextView>(R.id.voltageTv)
+        val currentTv = findViewById<TextView>(R.id.currentTv)
+        val powerTv = findViewById<TextView>(R.id.powerTv)
 
         if (present) {
             getBatteryCapacity(this)
@@ -531,18 +518,19 @@ class MainActivity : AppCompatActivity(), TestAdapter.ClickListener {
 
             val voltageTmp = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0)
 
-            voltageV = voltageTmp.toFloat()
-            if (voltageV > 0) {
-                voltageTv.text =  String.format(resources.getString(R.string.voltage_text), voltageV)
-            }
+            voltageV = voltageTmp.toFloat() //mV
+            //voltageV /= 1000 //V
+            voltageTv.text =  String.format(resources.getString(R.string.voltage_text), voltageV)
 
-            val currentTmp = getCurrent(this)
+            val currentTmp = getCurrent(this) // μA - microAmpers
 
-            currentMah = currentTmp.toFloat() / 1000
-            findViewById<TextView>(R.id.currentTv).text =  String.format(resources.getString(R.string.current_text), currentMah)
+            currentMA = currentTmp.toFloat() / 1000 // mA - miliAmpers
 
-            powerW = (voltageV  * currentMah/1000)
-            findViewById<TextView>(R.id.powerTv).text =  String.format(resources.getString(R.string.power_text), powerW)
+            currentTv.text = String.format(resources.getString(R.string.current_text), currentMA)
+
+
+            powerW = (voltageV  * currentMA / 1000) //Volt * Amp
+            powerTv.text =  String.format(resources.getString(R.string.power_text), powerW)
 
         } else {
             Toast.makeText(this, "No Battery present", Toast.LENGTH_SHORT).show()
@@ -600,6 +588,26 @@ class MainActivity : AppCompatActivity(), TestAdapter.ClickListener {
             if (!recording) drawerLayout.openDrawer(GravityCompat.END)
             openShowTestDialog()
             true
+        }
+        val numberPicker = findViewById<NumberPicker>(R.id.recording_duration)
+        numberPicker.maxValue = 60
+        numberPicker.minValue = 1
+        numberPicker.value = testDuration.toInt()
+        numberPicker.wrapSelectorWheel = true
+        numberPicker.setOnValueChangedListener {_, _, newVal ->
+            testDuration = newVal.toLong()
+        }
+        val numberPicker1 = findViewById<NumberPicker>(R.id.interval_duration)
+        numberPicker1.maxValue = 60
+        numberPicker1.minValue = 1
+        numberPicker1.value = testInterval
+        numberPicker1.wrapSelectorWheel = true
+        numberPicker1.setOnValueChangedListener {_, _, newVal ->
+            testInterval = newVal
+        }
+
+        findViewById<ImageButton>(R.id.btn_refresh_battery_info).setOnClickListener {
+            loadBatterySection()
         }
         findViewById<Button>(R.id.btn_turn_off_services).setOnClickListener {
             turnOffServices()

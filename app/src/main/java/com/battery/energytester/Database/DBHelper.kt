@@ -30,7 +30,7 @@ class DBHelper(context: Context, factory: SQLiteDatabase.CursorFactory?) :
         val TEST_NAME_COL = "test_name"
         val NUM_COL = "num"
         val DURATION_COl = "duration_s"
-        val CURRENT_COL = "current_mAh"
+        val CURRENT_COL = "current_mA"
         val VOLTAGE_COL = "voltage_V"
         val POWER_COl = "power_W"
         val ENERGY_COL = "energy_J"
@@ -39,7 +39,7 @@ class DBHelper(context: Context, factory: SQLiteDatabase.CursorFactory?) :
         val NAME_COl = "name"
         val TOTAL_ITERATIONS_COl = "number_of_total_iterations"
         val TOTAL_DURATION_COl = "total_duration_s"
-        val AVG_CURRENT_COL = "avg_current_mAh"
+        val AVG_CURRENT_COL = "avg_current_mA"
         val AVG_VOLTAGE_COL = "avg_voltage_V"
         val AVG_POWER_COl = "avg_power_W"
         val TOTAL_ENERGY_COL = "total_energy_J"
@@ -80,6 +80,8 @@ class DBHelper(context: Context, factory: SQLiteDatabase.CursorFactory?) :
         // this method is to check if table already exists
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_ITERATION_NAME)
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_TEST_NAME)
+        db.execSQL("DROP TABLE IF EXISTS ITERATIONS_table_tmp")
+        db.execSQL("DROP TABLE IF EXISTS TESTS_table_tmp")
         onCreate(db)
     }
 

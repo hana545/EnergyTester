@@ -28,13 +28,13 @@
     <string name="plugged_text">Plugged:  %1$s </string>
     <string name="temperature_text">Temperature: %1$s °C</string>
     <string name="voltage_text">Voltage %1$s V</string>
-    <string name="current_text">Current %1$s mAh</string>
+    <string name="current_text">Current %1$s mA</string>
     <string name="power_text">Power: %1$s W</string>
     <string name="energy_text">Energy: %1$s J</string>
 
     <string name="duration_unit">%1$s s</string>
     <string name="voltage_unit">%1$s V</string>
-    <string name="current_unit">%1$s mAh</string>
+    <string name="current_unit">%1$s mA</string>
     <string name="power_unit">%1$s W</string>
     <string name="energy_unit">%1$s J</string>
 
